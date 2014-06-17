@@ -34,6 +34,7 @@ import com.example.letsjemtabby.utils.Costanti;
 
 import android.content.Intent;
 import android.opengl.GLES20;
+import android.os.Bundle;
 
 
 public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemClickListener {
@@ -54,7 +55,6 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 
 	private Font mFont;
-	private Music mMusic;
 	protected MenuScene mMenuScene;
 	private Font mFontTitolo;
 	private Text mTitolo;
@@ -95,8 +95,11 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 		
 		MusicFactory.setAssetBasePath("mfx/");
 		try {
-			this.mMusic = MusicFactory.createMusicFromAsset(this.mEngine.getMusicManager(), this, "wagner_the_ride_of_the_valkyries.ogg");
-			this.mMusic.setLooping(true);
+			if(Costanti.mMusic==null)
+			{
+				Costanti.mMusic = MusicFactory.createMusicFromAsset(this.mEngine.getMusicManager(), this, "wagner_the_ride_of_the_valkyries.ogg");
+				Costanti.mMusic.setLooping(true);
+			}
 		} catch (final IOException e) {
 			Debug.e(e);
 		}
@@ -105,8 +108,8 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 	@Override
 	public Scene onCreateScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-		if(!this.mMusic.isPlaying())
-			this.mMusic.play();
+		if(!Costanti.mMusic.isPlaying())
+			Costanti.mMusic.play();
 		
 		this.mMenuScene = this.createMenuScene();
 		this.mMainScene = new Scene();
@@ -125,14 +128,14 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 			{
 				if(pSceneTouchEvent.isActionDown())
 				{
-					if(MenuIniziale.this.mMusic.getVolume()!=0)
+					if(Costanti.mMusic.getVolume()!=0)
 					{
-						MenuIniziale.this.mMusic.setVolume(0,0);
+						Costanti.mMusic.setVolume(0,0);
 						this.setTextureRegion(MenuIniziale.this.mVolumeTextureAssente);
 					}
-					else if(MenuIniziale.this.mMusic.getVolume()==0)
+					else if(Costanti.mMusic.getVolume()==0)
 					{
-						MenuIniziale.this.mMusic.setVolume(1,1);
+						Costanti.mMusic.setVolume(1,1);
 						this.setTextureRegion(MenuIniziale.this.mVolumeTexturePresente);
 					}
 				}
@@ -156,6 +159,8 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 				return true;
 			case MENU_CREDITS:
 				Intent iCredits = new Intent(MenuIniziale.this,MenuCredits.class);
+				Bundle extras = new Bundle();
+				iCredits.putExtras(extras);
 				startActivity(iCredits);
 				return true;
 			case MENU_QUIT:
@@ -196,6 +201,18 @@ public class MenuIniziale extends SimpleBaseGameActivity implements IOnMenuItemC
 
 		menuScene.setOnMenuItemClickListener(this);
 		return menuScene;
+	}
+	
+	@Override
+	public void onDestroyResources()
+	{
+		try {
+			super.onDestroyResources();
+			Costanti.mMusic = null;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
